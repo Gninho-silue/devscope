@@ -5,33 +5,33 @@ import type { AnalyzeRequestBody } from "@/types/analysis";
 import type { GitHubData, GitHubRepo } from "@/types/github";
 
 /**
- * Strip GitHubData down to the minimum the LLM needs.
- * Keeps top 6 repos, top 5 languages, and a trimmed user object.
- * Removes topRepos (duplicate of repos) to avoid sending the same data twice.
+ * Strip GitHubData to a focused payload for the LLM.
+ * Sends enough signal (8 repos, 8 languages, full bio) for an accurate
+ * seniority assessment without blowing through Groq's token limits.
  */
 function stripForLLM(data: GitHubData): Omit<GitHubData, "topRepos"> & { topRepos: GitHubRepo[] } {
   const repos: GitHubRepo[] = data.repos
-    .slice(0, 6)
+    .slice(0, 8)
     .map((r) => ({
       name: r.name,
-      description: r.description ? r.description.slice(0, 80) : null,
+      description: r.description ? r.description.slice(0, 120) : null,
       language: r.language,
       stargazers_count: r.stargazers_count,
       forks_count: r.forks_count,
-      topics: r.topics.slice(0, 3),
+      topics: r.topics.slice(0, 5),
       html_url: r.html_url,
       updated_at: r.updated_at,
     }));
 
   const topLangs = Object.fromEntries(
-    Object.entries(data.languages).slice(0, 5),
+    Object.entries(data.languages).slice(0, 8),
   );
 
   return {
     user: {
       login: data.user.login,
       name: data.user.name,
-      bio: data.user.bio ? data.user.bio.slice(0, 100) : null,
+      bio: data.user.bio,
       avatar_url: data.user.avatar_url,
       public_repos: data.user.public_repos,
       followers: data.user.followers,
