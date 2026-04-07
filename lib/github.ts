@@ -1,8 +1,8 @@
 import type { GitHubData, GitHubRepo, GitHubUser } from "@/types/github";
 
 const GITHUB_API = "https://api.github.com";
-const REPOS_LIMIT = 20;
-const TOP_REPOS_LIMIT = 5;
+const REPOS_LIMIT = 20;  // fetch 20 from GitHub, trim later
+const TOP_REPOS_LIMIT = 6;
 
 /**
  * Build headers for every GitHub API request.
@@ -136,19 +136,40 @@ export function aggregateLanguages(
 }
 
 /**
+ * Trim a single repo down to the fields the LLM needs.
+ * Keeps payload small: no dates, no full topic lists, no null values.
+ */
+function trimRepo(repo: GitHubRepo): GitHubRepo {
+  return {
+    name: repo.name,
+    description: repo.description ? repo.description.slice(0, 80) : null,
+    language: repo.language,
+    stargazers_count: repo.stargazers_count,
+    forks_count: repo.forks_count,
+    topics: (repo.topics ?? []).slice(0, 3),
+    html_url: repo.html_url,
+    updated_at: repo.updated_at,
+  };
+}
+
+/**
  * Fetch all public GitHub data for a username and assemble a GitHubData object
- * ready to be sent to the Claude analysis API.
+ * ready to be sent to the Groq analysis API.
+ * Repos are trimmed to top 6 by stars with minimal fields to keep token count low.
  */
 export async function buildGithubData(username: string): Promise<GitHubData> {
-  const [user, repos] = await Promise.all([
+  const [user, rawRepos] = await Promise.all([
     fetchGithubUser(username),
     fetchUserRepos(username),
   ]);
 
-  const languages = aggregateLanguages(repos);
-  const topRepos = [...repos]
+  // Top 6 by stars, fields trimmed to reduce LLM payload size
+  const repos = [...rawRepos]
     .sort((a, b) => b.stargazers_count - a.stargazers_count)
-    .slice(0, TOP_REPOS_LIMIT);
+    .slice(0, TOP_REPOS_LIMIT)
+    .map(trimRepo);
+
+  const languages = aggregateLanguages(repos);
 
   const totalStars = repos.reduce(
     (sum, repo) => sum + repo.stargazers_count,
@@ -162,8 +183,9 @@ export async function buildGithubData(username: string): Promise<GitHubData> {
   return {
     user,
     repos,
+    // topRepos is the same slice — no duplicate data sent to the LLM
+    topRepos: repos,
     languages,
-    topRepos,
     totalStars,
     accountAgeYears: Math.floor(accountAgeYears),
   };

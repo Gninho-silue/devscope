@@ -5,7 +5,7 @@ import type { GitHubData } from "@/types/github";
 import { buildAnalysisPrompt } from "@/lib/prompts";
 
 const MODEL = "llama-3.3-70b-versatile";
-const MAX_TOKENS = 2000;
+const MAX_TOKENS = 1500;
 const TEMPERATURE = 0.3;
 
 /** Typed error for Groq API failures, with an HTTP status code. */
@@ -172,6 +172,12 @@ export async function analyzeProfile(
         throw new GroqError(
           "Groq API rate limit reached. Please wait a moment and try again.",
           429,
+        );
+      }
+      if (status === 413) {
+        throw new GroqError(
+          "Profile too large to analyze. Try a profile with fewer repositories.",
+          413,
         );
       }
       throw new GroqError(
