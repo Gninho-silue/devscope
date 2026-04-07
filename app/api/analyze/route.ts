@@ -1,6 +1,6 @@
 import { type NextRequest, NextResponse } from "next/server";
 
-import { analyzeProfile, AnthropicError } from "@/lib/anthropic";
+import { analyzeProfile, GroqError } from "@/lib/groq";
 import type { AnalyzeRequestBody } from "@/types/analysis";
 import type { GitHubData } from "@/types/github";
 
@@ -30,7 +30,7 @@ function isValidGithubData(value: unknown): value is GitHubData {
  *
  * Returns: { analysis: AnalysisResult }
  *
- * The ANTHROPIC_API_KEY is accessed exclusively here on the server.
+ * The GROQ_API_KEY is accessed exclusively here on the server.
  * It is never sent to or accessible from the client.
  */
 export async function POST(request: NextRequest): Promise<NextResponse> {
@@ -66,13 +66,13 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     );
   }
 
-  // ── Call Claude ───────────────────────────────────────────────────────────
+  // ── Call Groq ─────────────────────────────────────────────────────────────
   try {
     const analysis = await analyzeProfile(body.githubData);
     return NextResponse.json({ analysis }, { status: 200 });
   } catch (err) {
-    if (err instanceof AnthropicError) {
-      // 4xx errors from Claude are surfaced as-is; 5xx are internal failures.
+    if (err instanceof GroqError) {
+      // 4xx errors from Groq are surfaced as-is; 5xx are internal failures.
       const status = err.status >= 400 && err.status < 600 ? err.status : 500;
       return NextResponse.json({ error: err.message }, { status });
     }

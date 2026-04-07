@@ -1,82 +1,82 @@
-import Anthropic from "@anthropic-ai/sdk";
+import Groq from "groq-sdk";
 
 import type { AnalysisResult } from "@/types/analysis";
 import type { GitHubData } from "@/types/github";
 import { buildAnalysisPrompt } from "@/lib/prompts";
 
-const MODEL = "claude-sonnet-4-20250514";
+const MODEL = "llama-3.3-70b-versatile";
 const MAX_TOKENS = 2000;
+const TEMPERATURE = 0.3;
 
-/** Typed error for Claude API failures, with an optional HTTP status code. */
-export class AnthropicError extends Error {
+/** Typed error for Groq API failures, with an HTTP status code. */
+export class GroqError extends Error {
   constructor(
     message: string,
     public readonly status: number = 500,
   ) {
     super(message);
-    this.name = "AnthropicError";
+    this.name = "GroqError";
   }
 }
 
 /**
- * Lazily create the Anthropic client so that missing ANTHROPIC_API_KEY
- * only throws at call time (not at module load / build time).
+ * Lazily create the Groq client so that a missing GROQ_API_KEY
+ * only throws at call time, not at module load / build time.
  */
-function getClient(): Anthropic {
-  const apiKey = process.env.ANTHROPIC_API_KEY;
+function getClient(): Groq {
+  const apiKey = process.env.GROQ_API_KEY;
   if (!apiKey) {
-    throw new AnthropicError(
-      "ANTHROPIC_API_KEY is not set. Add it to your .env.local file.",
+    throw new GroqError(
+      "GROQ_API_KEY is not set. Add it to your .env.local file. Get a free key at console.groq.com.",
       500,
     );
   }
-  return new Anthropic({ apiKey });
+  return new Groq({ apiKey });
 }
 
 /**
  * Validate that a raw parsed object matches the AnalysisResult shape.
- * Returns a typed AnalysisResult or throws AnthropicError on any mismatch.
+ * Returns a typed AnalysisResult or throws GroqError on any mismatch.
  *
- * We keep this as a runtime guard — TypeScript alone cannot validate
- * untrusted JSON from an external API.
+ * Runtime guard — TypeScript cannot validate untrusted JSON from an LLM.
  */
 function validateAnalysisResult(raw: unknown): AnalysisResult {
   if (typeof raw !== "object" || raw === null) {
-    throw new AnthropicError("Claude response is not a JSON object.", 502);
+    throw new GroqError("LLM response is not a JSON object.", 502);
   }
 
   const obj = raw as Record<string, unknown>;
 
   // ── seniority ────────────────────────────────────────────────────────────
   if (typeof obj.seniority !== "object" || obj.seniority === null) {
-    throw new AnthropicError("Missing or invalid field: seniority.", 502);
+    throw new GroqError("Missing or invalid field: seniority.", 502);
   }
   const sen = obj.seniority as Record<string, unknown>;
   const validLevels = ["Junior", "Mid-Level", "Senior", "Expert"] as const;
   if (!validLevels.includes(sen.level as (typeof validLevels)[number])) {
-    throw new AnthropicError(
+    throw new GroqError(
       `Invalid seniority.level: "${sen.level}". Expected one of ${validLevels.join(", ")}.`,
       502,
     );
   }
   if (typeof sen.score !== "number" || sen.score < 0 || sen.score > 100) {
-    throw new AnthropicError(
+    throw new GroqError(
       "seniority.score must be an integer between 0 and 100.",
       502,
     );
   }
   if (typeof sen.reasoning !== "string") {
-    throw new AnthropicError("seniority.reasoning must be a string.", 502);
+    throw new GroqError("seniority.reasoning must be a string.", 502);
   }
 
   // ── stack ────────────────────────────────────────────────────────────────
   if (typeof obj.stack !== "object" || obj.stack === null) {
-    throw new AnthropicError("Missing or invalid field: stack.", 502);
+    throw new GroqError("Missing or invalid field: stack.", 502);
   }
   const stack = obj.stack as Record<string, unknown>;
   for (const key of ["primary", "secondary", "missing"] as const) {
     if (!Array.isArray(stack[key])) {
-      throw new AnthropicError(`stack.${key} must be an array.`, 502);
+      throw new GroqError(`stack.${key} must be an array.`, 502);
     }
   }
 
@@ -88,35 +88,31 @@ function validateAnalysisResult(raw: unknown): AnalysisResult {
     "jobRoles",
   ] as const) {
     if (!Array.isArray(obj[key])) {
-      throw new AnthropicError(`"${key}" must be an array.`, 502);
+      throw new GroqError(`"${key}" must be an array.`, 502);
     }
   }
 
   // ── projectHighlights ─────────────────────────────────────────────────────
   if (!Array.isArray(obj.projectHighlights)) {
-    throw new AnthropicError("projectHighlights must be an array.", 502);
+    throw new GroqError("projectHighlights must be an array.", 502);
   }
   for (const [i, ph] of (
     obj.projectHighlights as Record<string, unknown>[]
   ).entries()) {
     if (typeof ph.name !== "string") {
-      throw new AnthropicError(
+      throw new GroqError(
         `projectHighlights[${i}].name must be a string.`,
         502,
       );
     }
     if (typeof ph.assessment !== "string") {
-      throw new AnthropicError(
+      throw new GroqError(
         `projectHighlights[${i}].assessment must be a string.`,
         502,
       );
     }
-    if (
-      typeof ph.score !== "number" ||
-      ph.score < 0 ||
-      ph.score > 100
-    ) {
-      throw new AnthropicError(
+    if (typeof ph.score !== "number" || ph.score < 0 || ph.score > 100) {
+      throw new GroqError(
         `projectHighlights[${i}].score must be an integer between 0 and 100.`,
         502,
       );
@@ -125,18 +121,19 @@ function validateAnalysisResult(raw: unknown): AnalysisResult {
 
   // ── summary ──────────────────────────────────────────────────────────────
   if (typeof obj.summary !== "string") {
-    throw new AnthropicError("summary must be a string.", 502);
+    throw new GroqError("summary must be a string.", 502);
   }
 
   return raw as AnalysisResult;
 }
 
 /**
- * Send a GitHub profile to Claude and return a validated AnalysisResult.
+ * Send a GitHub profile to Groq (llama-3.3-70b-versatile) and return
+ * a validated AnalysisResult.
  *
- * - Calls claude-sonnet-4-20250514 server-side only (ANTHROPIC_API_KEY never leaves the server).
+ * - All calls are server-side only — GROQ_API_KEY never reaches the client.
  * - Parses and validates the JSON response against the AnalysisResult schema.
- * - Throws AnthropicError with a descriptive message on any failure.
+ * - Throws GroqError with a descriptive message and HTTP status on any failure.
  */
 export async function analyzeProfile(
   githubData: GitHubData,
@@ -147,59 +144,60 @@ export async function analyzeProfile(
   let responseText: string;
 
   try {
-    const message = await client.messages.create({
+    const completion = await client.chat.completions.create({
       model: MODEL,
+      temperature: TEMPERATURE,
       max_tokens: MAX_TOKENS,
       messages: [{ role: "user", content: prompt }],
     });
 
-    // The response content is an array of blocks; we only care about text blocks.
-    const textBlock = message.content.find((block) => block.type === "text");
-    if (!textBlock || textBlock.type !== "text") {
-      throw new AnthropicError(
-        "Claude returned an empty or non-text response.",
-        502,
-      );
+    responseText = completion.choices[0]?.message?.content?.trim() ?? "";
+
+    if (!responseText) {
+      throw new GroqError("Groq returned an empty response.", 502);
     }
-
-    responseText = textBlock.text.trim();
   } catch (err) {
-    if (err instanceof AnthropicError) throw err;
+    if (err instanceof GroqError) throw err;
 
-    // Surface SDK-level errors (auth, network, rate-limit) with useful messages.
-    if (err instanceof Anthropic.APIError) {
+    // Surface SDK-level errors with useful messages.
+    if (err instanceof Groq.APIError) {
       const status = err.status ?? 500;
       if (status === 401) {
-        throw new AnthropicError(
-          "Invalid ANTHROPIC_API_KEY. Check your .env.local file.",
+        throw new GroqError(
+          "Invalid GROQ_API_KEY. Check your .env.local file.",
           401,
         );
       }
       if (status === 429) {
-        throw new AnthropicError(
-          "Claude API rate limit reached. Please wait a moment and try again.",
+        throw new GroqError(
+          "Groq API rate limit reached. Please wait a moment and try again.",
           429,
         );
       }
-      throw new AnthropicError(
-        `Claude API error (status ${status}): ${err.message}`,
+      throw new GroqError(
+        `Groq API error (status ${status}): ${err.message}`,
         status,
       );
     }
 
-    throw new AnthropicError(
-      "Unexpected error communicating with Claude API.",
+    throw new GroqError(
+      "Unexpected error communicating with Groq API.",
       500,
     );
   }
 
-  // Parse and validate the JSON response.
+  // Strip markdown fences if the model wraps its output anyway.
+  const cleaned = responseText
+    .replace(/^```(?:json)?\s*/i, "")
+    .replace(/\s*```$/i, "")
+    .trim();
+
   let parsed: unknown;
   try {
-    parsed = JSON.parse(responseText);
+    parsed = JSON.parse(cleaned);
   } catch {
-    throw new AnthropicError(
-      `Claude returned invalid JSON. Raw response: ${responseText.slice(0, 200)}`,
+    throw new GroqError(
+      `Groq returned invalid JSON. Raw response: ${cleaned.slice(0, 200)}`,
       502,
     );
   }
