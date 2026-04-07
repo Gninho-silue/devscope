@@ -6,6 +6,7 @@ import { motion } from "framer-motion";
 import { useAnalysis } from "@/hooks/useAnalysis";
 import LoadingSpinner from "@/components/shared/LoadingSpinner";
 import GithubCard from "@/components/shared/GithubCard";
+import ReportCard from "@/components/analysis/ReportCard";
 
 export default function AnalyzePage() {
   const params = useParams();
@@ -35,6 +36,7 @@ export default function AnalyzePage() {
           </h2>
           <p className="text-brand-muted text-sm mb-6">{error}</p>
           <button
+            type="button"
             onClick={() => router.push("/")}
             className="inline-flex items-center gap-2 rounded-xl bg-brand-primary px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-brand-primary/80"
           >
@@ -53,6 +55,7 @@ export default function AnalyzePage() {
         <div className="sticky top-0 z-10 border-b border-white/10 bg-brand-background/80 backdrop-blur-sm">
           <div className="mx-auto flex max-w-4xl items-center px-4 py-3">
             <button
+              type="button"
               onClick={() => router.push("/")}
               className="inline-flex items-center gap-2 text-sm text-brand-muted transition-colors hover:text-brand-text"
             >
@@ -85,21 +88,14 @@ export default function AnalyzePage() {
             />
           </motion.div>
 
-          {/* Report placeholder — replaced in feat/report-card */}
+          {/* Full AI report */}
           {analysis && (
             <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: 0.15, ease: [0.22, 1, 0.36, 1] }}
-              className="rounded-2xl border border-white/10 bg-brand-surface p-8 text-center"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.4, delay: 0.2 }}
             >
-              <p className="text-brand-muted text-sm">
-                Report coming in next step —{" "}
-                <span className="font-semibold text-brand-accent">
-                  {analysis.seniority.level}
-                </span>{" "}
-                developer detected.
-              </p>
+              <ReportCard analysis={analysis} githubData={githubData} />
             </motion.div>
           )}
         </main>
