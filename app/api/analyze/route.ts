@@ -2,7 +2,51 @@ import { type NextRequest, NextResponse } from "next/server";
 
 import { analyzeProfile, GroqError } from "@/lib/groq";
 import type { AnalyzeRequestBody } from "@/types/analysis";
-import type { GitHubData } from "@/types/github";
+import type { GitHubData, GitHubRepo } from "@/types/github";
+
+/**
+ * Strip GitHubData down to the minimum the LLM needs.
+ * Keeps top 6 repos, top 5 languages, and a trimmed user object.
+ * Removes topRepos (duplicate of repos) to avoid sending the same data twice.
+ */
+function stripForLLM(data: GitHubData): Omit<GitHubData, "topRepos"> & { topRepos: GitHubRepo[] } {
+  const repos: GitHubRepo[] = data.repos
+    .slice(0, 6)
+    .map((r) => ({
+      name: r.name,
+      description: r.description ? r.description.slice(0, 80) : null,
+      language: r.language,
+      stargazers_count: r.stargazers_count,
+      forks_count: r.forks_count,
+      topics: r.topics.slice(0, 3),
+      html_url: r.html_url,
+      updated_at: r.updated_at,
+    }));
+
+  const topLangs = Object.fromEntries(
+    Object.entries(data.languages).slice(0, 5),
+  );
+
+  return {
+    user: {
+      login: data.user.login,
+      name: data.user.name,
+      bio: data.user.bio ? data.user.bio.slice(0, 100) : null,
+      avatar_url: data.user.avatar_url,
+      public_repos: data.user.public_repos,
+      followers: data.user.followers,
+      following: data.user.following,
+      created_at: data.user.created_at,
+      location: data.user.location,
+      blog: data.user.blog,
+    },
+    repos,
+    topRepos: repos,
+    languages: topLangs,
+    totalStars: data.totalStars,
+    accountAgeYears: data.accountAgeYears,
+  };
+}
 
 /**
  * Minimal structural check that an object looks like GitHubData.
@@ -66,12 +110,21 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     );
   }
 
+  // ── Strip payload to stay within Groq token limits ───────────────────────
+  const trimmed = stripForLLM(body.githubData);
+
   // ── Call Groq ─────────────────────────────────────────────────────────────
   try {
-    const analysis = await analyzeProfile(body.githubData);
+    const analysis = await analyzeProfile(trimmed);
     return NextResponse.json({ analysis }, { status: 200 });
   } catch (err) {
     if (err instanceof GroqError) {
+      if (err.status === 413) {
+        return NextResponse.json(
+          { error: "Profile too large to analyze. Try a profile with fewer repositories." },
+          { status: 413 },
+        );
+      }
       // 4xx errors from Groq are surfaced as-is; 5xx are internal failures.
       const status = err.status >= 400 && err.status < 600 ? err.status : 500;
       return NextResponse.json({ error: err.message }, { status });
