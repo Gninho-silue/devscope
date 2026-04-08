@@ -10,7 +10,7 @@ interface GithubCardProps {
 
 export default function GithubCard({ user, accountAgeYears }: GithubCardProps) {
   return (
-    <div className="w-full rounded-2xl border border-white/10 bg-brand-surface p-6 shadow-[0_0_32px_rgba(36,83,211,0.08)] backdrop-blur-sm">
+    <div className="w-full rounded-2xl border border-white/10 bg-brand-surface p-4 sm:p-6 shadow-[0_0_32px_rgba(36,83,211,0.08)] backdrop-blur-sm">
       <div className="flex flex-col items-center gap-4 sm:flex-row sm:items-start sm:gap-6">
         {/* Avatar */}
         <div className="relative shrink-0">

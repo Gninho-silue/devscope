@@ -75,7 +75,7 @@ export default function AnalyzePage() {
         </div>
 
         {/* Page content */}
-        <main className="mx-auto max-w-4xl px-4 py-10 space-y-8">
+        <main className="mx-auto max-w-4xl px-3 sm:px-4 py-6 sm:py-10 space-y-4 sm:space-y-8">
           {/* GitHub profile card */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}

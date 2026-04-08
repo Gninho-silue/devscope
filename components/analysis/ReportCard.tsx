@@ -30,7 +30,7 @@ function Section({
       initial={{ opacity: 0, y: 24 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5, delay: index * 0.1, ease: [0.22, 1, 0.36, 1] }}
-      className="rounded-xl border border-white/10 bg-brand-surface p-6 backdrop-blur-sm"
+      className="rounded-xl border border-white/10 bg-brand-surface p-4 sm:p-6 backdrop-blur-sm"
     >
       <h3 className="mb-4 flex items-center gap-2 font-heading text-base font-semibold text-brand-text">
         <span aria-hidden="true">{icon}</span>
@@ -107,7 +107,7 @@ export default function ReportCard({ analysis, githubData }: ReportCardProps) {
         initial={{ opacity: 0, y: 24 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, delay: 0, ease: [0.22, 1, 0.36, 1] }}
-        className="rounded-xl border border-brand-primary/20 bg-brand-primary/8 p-6 backdrop-blur-sm"
+        className="rounded-xl border border-brand-primary/20 bg-brand-primary/8 p-4 sm:p-6 backdrop-blur-sm"
       >
         <p className="text-sm italic leading-relaxed text-brand-text/80">
           &ldquo;{analysis.summary}&rdquo;

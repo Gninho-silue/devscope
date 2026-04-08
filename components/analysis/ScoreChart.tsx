@@ -158,7 +158,7 @@ export default function ScoreChart({ analysis, githubData }: ScoreChartProps) {
             <span className="text-xs font-bold tabular-nums text-[#f9fafb]">
               {score}
             </span>
-            <span className="text-[10px] text-[#6B7280]">{axis}</span>
+            <span className="text-[9px] sm:text-[10px] text-[#6B7280]">{axis}</span>
           </div>
         ))}
       </div>

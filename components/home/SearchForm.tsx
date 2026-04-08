@@ -82,7 +82,7 @@ export default function SearchForm() {
   return (
     <div className="w-full max-w-xl">
       <form onSubmit={handleSubmit} noValidate>
-        <div className="flex gap-3 items-stretch">
+        <div className="flex flex-col sm:flex-row gap-3 items-stretch">
           {/* Input */}
           <div className="relative flex-1">
             <SearchIcon className="absolute left-3.5 top-1/2 -translate-y-1/2 w-5 h-5 text-[#6b7280] pointer-events-none" />
@@ -114,7 +114,7 @@ export default function SearchForm() {
             type="submit"
             disabled={loading}
             className={[
-              "h-12 px-6 rounded-xl font-semibold text-white text-base",
+              "w-full sm:w-auto h-12 px-6 rounded-xl font-semibold text-white text-base",
               "bg-[#2453d3] hover:bg-[#1e45b8] active:bg-[#1a3da0]",
               "transition-all duration-200 flex items-center gap-2 shrink-0",
               "disabled:opacity-60 disabled:cursor-not-allowed",
