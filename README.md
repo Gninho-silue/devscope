@@ -2,7 +2,7 @@
 
 > AI-powered GitHub profile analyzer — get an instant technical report on any developer.DevScope — AI-powered GitHub Profile Analyzer  
 > Next.js · TypeScript · Groq AI · GitHub Actions · Vercel  
-> [Test it]()https://devscope-lake.vercel.app/
+> [Checkout here](https://devscope-lake.vercel.app/)
 
 ![DevScope Hero](public/og-image.png)
 
