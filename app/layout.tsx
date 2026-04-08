@@ -32,10 +32,28 @@ const dmSans = DM_Sans({
   display: "swap",
 });
 
+const APP_URL = process.env.NEXT_PUBLIC_APP_URL ?? "https://devscope.vercel.app";
+
 export const metadata: Metadata = {
   title: "DevScope — AI GitHub Profile Analyzer",
   description:
-    "Analyze any GitHub profile with AI. Get an instant report on any developer's tech stack, seniority level, strengths, and job role recommendations.",
+    "Get an instant AI-powered report on any developer's GitHub profile. Analyze tech stack, seniority level, strengths, and job role recommendations.",
+  openGraph: {
+    title: "DevScope — AI GitHub Profile Analyzer",
+    description:
+      "Get an instant AI-powered report on any developer's GitHub profile.",
+    url: APP_URL,
+    siteName: "DevScope",
+    images: [{ url: `${APP_URL}/og-image.png`, width: 1200, height: 630 }],
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "DevScope — AI GitHub Profile Analyzer",
+    description:
+      "Get an instant AI-powered report on any developer's GitHub profile.",
+    images: [`${APP_URL}/og-image.png`],
+  },
 };
 
 export default function RootLayout({

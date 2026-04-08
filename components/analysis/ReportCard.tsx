@@ -6,6 +6,7 @@ import type { GitHubData } from "@/types/github";
 import SeniorityMeter from "@/components/analysis/SeniorityMeter";
 import StackBadges from "@/components/analysis/StackBadges";
 import ProjectList from "@/components/analysis/ProjectList";
+import ScoreChart from "@/components/analysis/ScoreChart";
 
 interface ReportCardProps {
   analysis: AnalysisResult;
@@ -113,8 +114,13 @@ export default function ReportCard({ analysis, githubData }: ReportCardProps) {
         </p>
       </motion.section>
 
-      {/* b) Seniority */}
-      <Section title="Seniority Level" icon="🎯" index={1}>
+      {/* b) Score radar */}
+      <Section title="Developer Profile" icon="📊" index={1}>
+        <ScoreChart analysis={analysis} githubData={githubData} />
+      </Section>
+
+      {/* c) Seniority */}
+      <Section title="Seniority Level" icon="🎯" index={2}>
         <div className="flex flex-col items-center gap-6 sm:flex-row sm:items-start">
           <SeniorityMeter
             score={analysis.seniority.score}
@@ -126,36 +132,36 @@ export default function ReportCard({ analysis, githubData }: ReportCardProps) {
         </div>
       </Section>
 
-      {/* c) Tech Stack */}
-      <Section title="Tech Stack" icon="🛠" index={2}>
+      {/* d) Tech Stack */}
+      <Section title="Tech Stack" icon="🛠" index={3}>
         <StackBadges stack={analysis.stack} />
       </Section>
 
-      {/* d) Strengths */}
-      <Section title="Strengths" icon="✅" index={3}>
+      {/* e) Strengths */}
+      <Section title="Strengths" icon="✅" index={4}>
         <CheckList items={analysis.strengths} />
       </Section>
 
-      {/* e) Weaknesses */}
-      <Section title="Areas to Improve" icon="⚠️" index={4}>
+      {/* f) Weaknesses */}
+      <Section title="Areas to Improve" icon="⚠️" index={5}>
         <WarnList items={analysis.weaknesses} />
       </Section>
 
-      {/* f) Project Highlights */}
-      <Section title="Project Highlights" icon="📦" index={5}>
+      {/* g) Project Highlights */}
+      <Section title="Project Highlights" icon="📦" index={6}>
         <ProjectList
           projects={analysis.projectHighlights}
           repos={githubData.repos}
         />
       </Section>
 
-      {/* g) Recommended Roles */}
-      <Section title="Recommended Roles" icon="💼" index={6}>
+      {/* h) Recommended Roles */}
+      <Section title="Recommended Roles" icon="💼" index={7}>
         <RoleBadges roles={analysis.jobRoles} />
       </Section>
 
-      {/* h) Suggestions */}
-      <Section title="Suggestions" icon="💡" index={7}>
+      {/* i) Suggestions */}
+      <Section title="Suggestions" icon="💡" index={8}>
         <NumberedList items={analysis.recommendations} />
       </Section>
     </div>

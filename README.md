@@ -148,6 +148,60 @@ Add the following environment variables in your Vercel project settings:
 
 ---
 
+## CI/CD Pipeline
+
+This project uses **GitHub Actions** for continuous integration and **Vercel** for deployment.
+
+### How it works
+
+| Workflow | Trigger | What it does |
+|----------|---------|--------------|
+| `ci.yml` | Every push / PR to `main` | Runs lint, type-check, and build in parallel |
+| `preview.yml` | Every pull request | Deploys a preview URL to Vercel and posts it as a PR comment |
+| `deploy.yml` | Push to `main` (after PR merge) | Deploys to Vercel production |
+
+### Pipeline diagram
+
+```
+PR opened
+  └── ci.yml         → lint + type-check + build (must pass)
+  └── preview.yml    → Vercel preview URL commented on PR
+
+PR merged to main
+  └── deploy.yml     → Vercel production deploy
+```
+
+### Required GitHub Secrets
+
+Go to **Settings → Secrets and variables → Actions** in your GitHub repo and add:
+
+| Secret | How to get it |
+|--------|---------------|
+| `VERCEL_TOKEN` | [vercel.com/account/tokens](https://vercel.com/account/tokens) |
+| `VERCEL_ORG_ID` | Run `npx vercel link` locally → check `.vercel/project.json` |
+| `VERCEL_PROJECT_ID` | Same file as above |
+| `GROQ_API_KEY` | [console.groq.com](https://console.groq.com) |
+| `GITHUB_PAT` | [github.com/settings/tokens](https://github.com/settings/tokens) — `public_repo` scope only |
+
+### First-time Vercel setup
+
+```bash
+# 1. Link the project to Vercel (run once locally)
+npx vercel link
+
+# 2. Copy the values from .vercel/project.json
+cat .vercel/project.json
+# → { "orgId": "...", "projectId": "..." }
+
+# 3. Add them as GitHub Secrets (VERCEL_ORG_ID, VERCEL_PROJECT_ID)
+
+# 4. Add GROQ_API_KEY and GITHUB_PAT as GitHub Secrets
+
+# 5. Push to main — the pipeline runs automatically
+```
+
+---
+
 ## Author
 
 **Gninninmaguignon Silué** — Full-Stack Developer | Java · React · Node.js · Cloud-Native
