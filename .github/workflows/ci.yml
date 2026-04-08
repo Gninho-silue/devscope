@@ -50,7 +50,7 @@ jobs:
     env:
       # Dummy values so Next.js build doesn't fail on missing env vars
       GROQ_API_KEY: ${{ secrets.GROQ_API_KEY || 'build-placeholder' }}
-      GITHUB_PAT: ${{ secrets.GITHUB_PAT || '' }}
+      GITHUB_PAT: ${{ secrets.GIT_TOKEN}}
       NEXT_PUBLIC_APP_URL: https://devscope.vercel.app
     steps:
       - uses: actions/checkout@v4
