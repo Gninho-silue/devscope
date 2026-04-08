@@ -2,9 +2,5 @@
   "framework": "nextjs",
   "buildCommand": "npm run build",
   "devCommand": "npm run dev",
-  "installCommand": "npm install",
-  "env": {
-    "GROQ_API_KEY": "@groq_api_key",
-    "GITHUB_TOKEN": "@github_pat"
-  }
+  "installCommand": "npm install"
 }
