@@ -1,6 +1,8 @@
 # DevScope 🔍
 
-> AI-powered GitHub profile analyzer — get an instant technical report on any developer.
+> AI-powered GitHub profile analyzer — get an instant technical report on any developer.DevScope — AI-powered GitHub Profile Analyzer  
+> Next.js · TypeScript · Groq AI · GitHub Actions · Vercel  
+> [Test it](devscope-lake.vercel.app)
 
 ![DevScope Hero](public/og-image.png)
 
@@ -154,11 +156,11 @@ This project uses **GitHub Actions** for continuous integration and **Vercel** f
 
 ### How it works
 
-| Workflow | Trigger | What it does |
-|----------|---------|--------------|
-| `ci.yml` | Every push / PR to `main` | Runs lint, type-check, and build in parallel |
-| `preview.yml` | Every pull request | Deploys a preview URL to Vercel and posts it as a PR comment |
-| `deploy.yml` | Push to `main` (after PR merge) | Deploys to Vercel production |
+| Workflow      | Trigger                         | What it does                                                 |
+| ------------- | ------------------------------- | ------------------------------------------------------------ |
+| `ci.yml`      | Every push / PR to `main`       | Runs lint, type-check, and build in parallel                 |
+| `preview.yml` | Every pull request              | Deploys a preview URL to Vercel and posts it as a PR comment |
+| `deploy.yml`  | Push to `main` (after PR merge) | Deploys to Vercel production                                 |
 
 ### Pipeline diagram
 
@@ -175,13 +177,13 @@ PR merged to main
 
 Go to **Settings → Secrets and variables → Actions** in your GitHub repo and add:
 
-| Secret | How to get it |
-|--------|---------------|
-| `VERCEL_TOKEN` | [vercel.com/account/tokens](https://vercel.com/account/tokens) |
-| `VERCEL_ORG_ID` | Run `npx vercel link` locally → check `.vercel/project.json` |
-| `VERCEL_PROJECT_ID` | Same file as above |
-| `GROQ_API_KEY` | [console.groq.com](https://console.groq.com) |
-| `GITHUB_PAT` | [github.com/settings/tokens](https://github.com/settings/tokens) — `public_repo` scope only |
+| Secret              | How to get it                                                                               |
+| ------------------- | ------------------------------------------------------------------------------------------- |
+| `VERCEL_TOKEN`      | [vercel.com/account/tokens](https://vercel.com/account/tokens)                              |
+| `VERCEL_ORG_ID`     | Run `npx vercel link` locally → check `.vercel/project.json`                                |
+| `VERCEL_PROJECT_ID` | Same file as above                                                                          |
+| `GROQ_API_KEY`      | [console.groq.com](https://console.groq.com)                                                |
+| `GITHUB_PAT`        | [github.com/settings/tokens](https://github.com/settings/tokens) — `public_repo` scope only |
 
 ### First-time Vercel setup
 
