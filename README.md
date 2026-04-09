@@ -122,8 +122,19 @@ devscope/
 ├── types/
 │   ├── github.ts                   # GitHub data types
 │   └── analysis.ts                 # Analysis result types
-└── hooks/
-    └── useAnalysis.ts              # Analysis flow hook
+├── hooks/
+│   └── useAnalysis.ts              # Analysis flow hook
+└── tests/
+    ├── setup.ts                    # jest-dom global setup
+    └── unit/
+        ├── lib/
+        │   ├── github.test.ts      # aggregateLanguages() unit tests
+        │   └── prompts.test.ts     # buildAnalysisPrompt() unit tests
+        ├── components/
+        │   ├── SearchForm.test.tsx # Input, validation, router.push
+        │   └── SeniorityMeter.test.tsx  # Score display, color logic
+        └── api/
+            └── github.test.ts      # /api/github route (400/403/404/500/200)
 ```
 
 ---
@@ -175,11 +186,11 @@ This project uses **GitHub Actions** for continuous integration and **Vercel** f
 
 ### How it works
 
-| Workflow      | Trigger                         | What it does                                                         |
-| ------------- | ------------------------------- | -------------------------------------------------------------------- |
-| `ci.yml`      | Every push / PR to `main`       | Runs security scan, lint, type-check, tests, and build               |
-| `preview.yml` | Every pull request              | Deploys a preview URL to Vercel and posts it as a PR comment         |
-| `deploy.yml`  | Push to `main` (after PR merge) | Deploys to Vercel production (only after CI passes)                  |
+| Workflow      | Trigger                         | What it does                                                 |
+| ------------- | ------------------------------- | ------------------------------------------------------------ |
+| `ci.yml`      | Every push / PR to `main`       | Runs security scan, lint, type-check, tests, and build       |
+| `preview.yml` | Every pull request              | Deploys a preview URL to Vercel and posts it as a PR comment |
+| `deploy.yml`  | Push to `main` (after PR merge) | Deploys to Vercel production (only after CI passes)          |
 
 ### Pipeline diagram
 
