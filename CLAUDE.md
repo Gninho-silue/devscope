@@ -367,19 +367,20 @@ warning: "#F59E0B";
 
 | Priority | Feature                                             | Branch                      | Status |
 | -------- | --------------------------------------------------- | --------------------------- | ------ |
-| 1        | Project setup (Next.js, TS, Tailwind, ESLint)       | `chore/project-setup`       | TODO   |
-| 2        | Hero section + search form UI                       | `feat/hero-section`         | TODO   |
-| 3        | GitHub API client + `/api/github` route             | `feat/github-api`           | TODO   |
-| 4        | Claude API integration + `/api/analyze` route       | `feat/claude-integration`   | TODO   |
-| 5        | Results page layout + routing                       | `feat/results-page`         | TODO   |
-| 6        | ReportCard component (strengths, weaknesses, roles) | `feat/report-card`          | TODO   |
-| 7        | SeniorityMeter visual component                     | `feat/seniority-meter`      | TODO   |
-| 8        | Stack badges + language breakdown                   | `feat/stack-badges`         | TODO   |
-| 9        | Score charts (Recharts radar chart)                 | `feat/score-charts`         | TODO   |
-| 10       | Loading states + error handling                     | `feat/loading-error-states` | TODO   |
-| 11       | Responsive + mobile polish                          | `feat/mobile-responsive`    | TODO   |
-| 12       | README + .env.example + deployment docs             | `docs/readme-and-setup`     | TODO   |
-| 13       | Vercel deployment + env config                      | `chore/vercel-deploy`       | TODO   |
+| 1        | Project setup (Next.js, TS, Tailwind, ESLint)       | `chore/project-setup`       | ✅ DONE |
+| 2        | Hero section + search form UI                       | `feat/hero-section`         | ✅ DONE |
+| 3        | GitHub API client + `/api/github` route             | `feat/github-api`           | ✅ DONE |
+| 4        | Groq AI integration + `/api/analyze` route          | `feat/groq-integration`     | ✅ DONE |
+| 5        | Results page layout + routing                       | `feat/results-page`         | ✅ DONE |
+| 6        | ReportCard component (strengths, weaknesses, roles) | `feat/report-card`          | ✅ DONE |
+| 7        | SeniorityMeter visual component                     | `feat/seniority-meter`      | ✅ DONE |
+| 8        | Stack badges + language breakdown                   | `feat/stack-badges`         | ✅ DONE |
+| 9        | Score charts (Recharts radar chart)                 | `feat/score-charts`         | ✅ DONE |
+| 10       | Loading states + error handling                     | `feat/loading-error-states` | ✅ DONE |
+| 11       | Responsive + mobile polish                          | `feat/mobile-responsive`    | ✅ DONE |
+| 12       | README + .env.example + deployment docs             | `docs/readme-and-setup`     | ✅ DONE |
+| 13       | Vercel deployment + env config                      | `chore/vercel-deploy`       | ✅ DONE |
+| 14       | Unit tests + security scanning                      | `chore/tests-and-security`  | ✅ DONE |
 
 ---
 
