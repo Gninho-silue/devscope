@@ -79,6 +79,25 @@ npm run dev
 # → http://localhost:3000
 ```
 
+### Run Tests
+
+```bash
+# Run all tests once
+npm run test
+
+# Watch mode
+npm run test:watch
+
+# With coverage report
+npm run test:coverage
+```
+
+### Security Audit
+
+```bash
+npm run security:audit
+```
+
 ---
 
 ## Project Structure
@@ -156,21 +175,24 @@ This project uses **GitHub Actions** for continuous integration and **Vercel** f
 
 ### How it works
 
-| Workflow      | Trigger                         | What it does                                                 |
-| ------------- | ------------------------------- | ------------------------------------------------------------ |
-| `ci.yml`      | Every push / PR to `main`       | Runs lint, type-check, and build in parallel                 |
-| `preview.yml` | Every pull request              | Deploys a preview URL to Vercel and posts it as a PR comment |
-| `deploy.yml`  | Push to `main` (after PR merge) | Deploys to Vercel production                                 |
+| Workflow      | Trigger                         | What it does                                                         |
+| ------------- | ------------------------------- | -------------------------------------------------------------------- |
+| `ci.yml`      | Every push / PR to `main`       | Runs security scan, lint, type-check, tests, and build               |
+| `preview.yml` | Every pull request              | Deploys a preview URL to Vercel and posts it as a PR comment         |
+| `deploy.yml`  | Push to `main` (after PR merge) | Deploys to Vercel production (only after CI passes)                  |
 
 ### Pipeline diagram
 
 ```
-PR opened
-  └── ci.yml         → lint + type-check + build (must pass)
-  └── preview.yml    → Vercel preview URL commented on PR
+PR opened / push
+  ├── security ─┐
+  │             ├─→ build (requires test + security)
+  └── lint ──→ test ─┘
+  └── type-check
 
 PR merged to main
-  └── deploy.yml     → Vercel production deploy
+  └── deploy.yml → Vercel production deploy
+                   (# Security and tests validated by CI pipeline)
 ```
 
 ### Required GitHub Secrets
