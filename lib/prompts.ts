@@ -30,7 +30,7 @@ ${JSON.stringify(githubData)}
 Respond ONLY with valid JSON, no markdown, no explanation:
 {
   "seniority": {
-    "level": "Junior|Mid-Level|Senior|Expert",
+    "level": "Complete beginner|Junior|Mid-Level|Senior|Expert",
     "score": <number 0-100>,
     "reasoning": "<specific reasoning mentioning actual repos and technologies seen, max 200 chars>"
   },

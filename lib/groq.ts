@@ -52,7 +52,7 @@ function validateAnalysisResult(raw: unknown): AnalysisResult {
     throw new GroqError("Missing or invalid field: seniority.", 502);
   }
   const sen = obj.seniority as Record<string, unknown>;
-  const validLevels = ["Junior", "Mid-Level", "Senior", "Expert"] as const;
+  const validLevels = ["Complete beginner", "Junior", "Mid-Level", "Senior", "Expert"] as const;
   if (!validLevels.includes(sen.level as (typeof validLevels)[number])) {
     throw new GroqError(
       `Invalid seniority.level: "${sen.level}". Expected one of ${validLevels.join(", ")}.`,

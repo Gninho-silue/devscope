@@ -4,7 +4,7 @@
  * from POST /api/analyze.
  */
 
-export type SeniorityLevel = "Junior" | "Mid-Level" | "Senior" | "Expert";
+export type SeniorityLevel = "Complete beginner" | "Junior" | "Mid-Level" | "Senior" | "Expert";
 
 export interface Seniority {
   level: SeniorityLevel;
