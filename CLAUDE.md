@@ -383,6 +383,62 @@ warning: "#F59E0B";
 
 ---
 
+## 🧪 Testing & Security
+
+### Test Files
+
+| File | What it covers |
+| ---- | -------------- |
+| `tests/unit/lib/github.test.ts` | `aggregateLanguages()` — percentages, empty repos, null languages, sort order |
+| `tests/unit/lib/prompts.test.ts` | `buildAnalysisPrompt()` — returns string, contains schema fields, injects `<data>` tags, JSON-only instruction |
+| `tests/unit/components/SearchForm.test.tsx` | Renders input/button, empty-submit error, invalid username error, `router.push` called with correct path |
+| `tests/unit/components/SeniorityMeter.test.tsx` | Renders level label, `/100` indicator, blue (< 40) / orange (40–69) / green (≥ 70) color logic |
+| `tests/unit/api/github.test.ts` | 400 missing/invalid username, 404 user not found, 403 rate limit, 200 success shape, 500 unexpected error |
+
+### Running Tests Locally
+
+```bash
+# Run all tests once
+npm run test
+
+# Watch mode (re-runs on file change)
+npm run test:watch
+
+# With coverage report
+npm run test:coverage
+# → Report written to ./coverage/
+```
+
+### Security Audit
+
+```bash
+# Run audit-ci with allowlist (dev-only vercel vulnerabilities are allowlisted)
+npm run security:audit
+
+# Raw npm audit
+npm audit --audit-level=moderate
+```
+
+All 31 vulnerabilities detected by `npm audit` are in the `vercel` devDependency and are allowlisted in `.auditrc.json` because they are not shipped in the production bundle. The fix requires a breaking downgrade (`vercel@32.3.0`).
+
+### CI/CD Pipeline
+
+```
+security ─┐
+           ├─→ build ─→ deploy (main only)
+lint ──→ test ─┘
+type-check (parallel with lint/security)
+```
+
+- **security** — runs `npm audit` + `audit-ci`, in parallel with lint
+- **lint** — runs ESLint
+- **type-check** — runs `tsc --noEmit`
+- **test** — runs after lint, uploads coverage artifact
+- **build** — runs only if both `test` AND `security` pass
+- **deploy** — triggered only on push to `main` after CI passes
+
+---
+
 ## ✅ Code Quality Rules
 
 - **TypeScript strict mode** — no `any` types, ever
