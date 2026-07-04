@@ -36,7 +36,7 @@ export interface GitHubData {
   repos: GitHubRepo[];
   /** Language name → percentage of total bytes across all repos (0–100) */
   languages: Record<string, number>;
-  /** Top 5 repos ordered by stargazers_count */
+  /** Top repos ranked by stars, then forks/topics/recency as tiebreakers */
   topRepos: GitHubRepo[];
   totalStars: number;
   accountAgeYears: number;
