@@ -1,13 +1,7 @@
 "use client";
 
-import {
-  RadarChart,
-  Radar,
-  PolarGrid,
-  PolarAngleAxis,
-  ResponsiveContainer,
-  Tooltip,
-} from "recharts";
+import { useEffect, useRef } from "react";
+import { motion, useMotionValue, useTransform, animate } from "framer-motion";
 import type { AnalysisResult } from "@/types/analysis";
 import type { GitHubData } from "@/types/github";
 
@@ -16,8 +10,8 @@ interface ScoreChartProps {
   githubData: GitHubData;
 }
 
-/* ── Derive the 5 radar dimensions from available data ──────────────────── */
-function buildRadarData(analysis: AnalysisResult, githubData: GitHubData) {
+/* ── Derive the 5 sub-score dimensions from available data ──────────────── */
+function buildScoreData(analysis: AnalysisResult, githubData: GitHubData) {
   // 1. Seniority — direct from model
   const seniority = analysis.seniority.score;
 
@@ -37,129 +31,133 @@ function buildRadarData(analysis: AnalysisResult, githubData: GitHubData) {
       : 50;
 
   // 4. Profile completeness — penalise missing skills
-  const profileDepth = Math.max(
-    10,
-    100 - analysis.stack.missing.length * 20,
-  );
+  const profileDepth = Math.max(10, 100 - analysis.stack.missing.length * 20);
 
   // 5. Community signal — stars + followers, logarithmic scale, capped 100
   const raw = githubData.totalStars * 2 + githubData.user.followers;
   const community = Math.min(100, Math.round(Math.log1p(raw) * 14));
 
   return [
-    { axis: "Seniority",   score: seniority },
-    { axis: "Stack",       score: stackBreadth },
-    { axis: "Projects",    score: projectQuality },
-    { axis: "Depth",       score: profileDepth },
-    { axis: "Community",   score: community },
+    { axis: "Seniority", score: seniority },
+    { axis: "Stack", score: stackBreadth },
+    { axis: "Projects", score: projectQuality },
+    { axis: "Depth", score: profileDepth },
+    { axis: "Community", score: community },
   ];
 }
 
-/* ── Custom tooltip ─────────────────────────────────────────────────────── */
-interface TooltipPayloadItem {
-  payload: { axis: string; score: number };
+function overallColor(score: number): string {
+  if (score >= 70) return "#10B981"; // green
+  if (score >= 50) return "#F59E0B"; // amber
+  return "#EF4444"; // red
 }
 
-function CustomTooltip({
-  active,
-  payload,
-}: {
-  active?: boolean;
-  payload?: TooltipPayloadItem[];
-}) {
-  if (!active || !payload?.length) return null;
-  const { axis, score } = payload[0].payload;
+/* ── Circular progress ring for the overall score ────────────────────────── */
+function ScoreRing({ score, color }: { score: number; color: string }) {
+  const size = 140;
+  const strokeWidth = 10;
+  const radius = (size - strokeWidth) / 2;
+  const circumference = 2 * Math.PI * radius;
+  const center = size / 2;
+
+  const motionScore = useMotionValue(0);
+  const displayScore = useTransform(motionScore, (v) => Math.round(v).toString());
+  const dashOffset = useMotionValue(circumference);
+  const hasAnimated = useRef(false);
+
+  useEffect(() => {
+    if (hasAnimated.current) return;
+    hasAnimated.current = true;
+    animate(motionScore, score, { duration: 1.2, ease: "easeOut" });
+    animate(dashOffset, circumference * (1 - score / 100), {
+      duration: 1.2,
+      ease: "easeOut",
+    });
+  }, [circumference, dashOffset, motionScore, score]);
+
   return (
-    <div className="rounded-lg border border-white/10 bg-brand-surface px-3 py-2 text-xs shadow-lg">
-      <p className="font-semibold text-[#f9fafb]">{axis}</p>
-      <p className="text-[#60A5FA]">{score} / 100</p>
+    <div className="relative" style={{ width: size, height: size }}>
+      <svg width={size} height={size} className="-rotate-90">
+        <circle
+          cx={center}
+          cy={center}
+          r={radius}
+          fill="none"
+          stroke="rgba(255,255,255,0.08)"
+          strokeWidth={strokeWidth}
+        />
+        <motion.circle
+          cx={center}
+          cy={center}
+          r={radius}
+          fill="none"
+          stroke={color}
+          strokeWidth={strokeWidth}
+          strokeLinecap="round"
+          strokeDasharray={circumference}
+          style={{ strokeDashoffset: dashOffset }}
+        />
+      </svg>
+      <div className="absolute inset-0 flex flex-col items-center justify-center gap-0.5">
+        <motion.span className="text-3xl font-bold leading-none" style={{ color }}>
+          {displayScore}
+        </motion.span>
+        <span className="text-[10px] uppercase tracking-widest text-brand-muted">
+          / 100
+        </span>
+      </div>
     </div>
   );
 }
 
-/* ── Custom angle-axis tick ─────────────────────────────────────────────── */
-function CustomTick(props: Record<string, unknown>) {
-  const x = Number(props.x ?? 0);
-  const y = Number(props.y ?? 0);
-  const cx = Number(props.cx ?? 0);
-  const cy = Number(props.cy ?? 0);
-  const payload = props.payload as { value: string } | undefined;
-  if (!payload) return null;
-
-  // Nudge labels away from the centre
-  const dx = x - cx;
-  const dy = y - cy;
-  const len = Math.sqrt(dx * dx + dy * dy) || 1;
-  const nx = x + (dx / len) * 10;
-  const ny = y + (dy / len) * 10;
-
+/* ── Horizontal sub-score bar ─────────────────────────────────────────────── */
+function SubScoreBar({ label, score }: { label: string; score: number }) {
   return (
-    <text
-      x={nx}
-      y={ny}
-      textAnchor="middle"
-      dominantBaseline="central"
-      fill="#6B7280"
-      fontSize={11}
-      fontFamily="var(--font-sans, sans-serif)"
-    >
-      {payload.value}
-    </text>
+    <div className="space-y-1.5">
+      <div className="flex items-center justify-between text-xs">
+        <span className="font-medium text-brand-muted">{label}</span>
+        <span className="font-semibold tabular-nums text-brand-text">{score}</span>
+      </div>
+      <div className="h-1.5 w-full overflow-hidden rounded-full bg-white/8">
+        <motion.div
+          className="h-full rounded-full bg-brand-accent"
+          initial={{ width: "0%" }}
+          animate={{ width: `${score}%` }}
+          transition={{ duration: 0.8, ease: "easeOut" }}
+        />
+      </div>
+    </div>
   );
 }
 
 /* ── Component ──────────────────────────────────────────────────────────── */
 export default function ScoreChart({ analysis, githubData }: ScoreChartProps) {
-  const data = buildRadarData(analysis, githubData);
+  const data = buildScoreData(analysis, githubData);
   const overallScore = Math.round(
     data.reduce((s, d) => s + d.score, 0) / data.length,
   );
+  const color = overallColor(overallScore);
 
   return (
-    <div className="space-y-4">
-      {/* Overall badge */}
-      <div className="flex items-center justify-between">
-        <p className="text-xs text-[#6B7280] uppercase tracking-widest font-medium">
+    <div className="flex flex-col items-center gap-8 sm:flex-row sm:items-center">
+      {/* Ring + seniority badge */}
+      <div className="flex shrink-0 flex-col items-center gap-3">
+        <span className="text-xs font-medium uppercase tracking-widest text-brand-muted">
           Overall Score
-        </p>
-        <span className="rounded-full bg-[#2453D3]/20 border border-[#2453D3]/30 px-3 py-0.5 text-sm font-bold text-[#60A5FA]">
-          {overallScore} / 100
+        </span>
+        <ScoreRing score={overallScore} color={color} />
+        <span
+          className="rounded-full px-4 py-1 text-sm font-semibold"
+          style={{ background: `${color}1a`, color, border: `1px solid ${color}40` }}
+        >
+          {analysis.seniority.level}
         </span>
       </div>
 
-      {/* Radar chart */}
-      <ResponsiveContainer width="100%" height={260}>
-        <RadarChart data={data} margin={{ top: 10, right: 30, bottom: 10, left: 30 }}>
-          <PolarGrid
-            stroke="rgba(255,255,255,0.07)"
-            strokeDasharray="3 3"
-          />
-          <PolarAngleAxis
-            dataKey="axis"
-            tick={(props) => <CustomTick {...(props as Record<string, unknown>)} />}
-          />
-          <Radar
-            name="Score"
-            dataKey="score"
-            stroke="#60A5FA"
-            fill="#2453D3"
-            fillOpacity={0.25}
-            strokeWidth={2}
-            dot={{ r: 3, fill: "#60A5FA", strokeWidth: 0 }}
-          />
-          <Tooltip content={<CustomTooltip />} />
-        </RadarChart>
-      </ResponsiveContainer>
-
-      {/* Score legend row */}
-      <div className="grid grid-cols-5 gap-1">
+      {/* Sub-score bars */}
+      <div className="w-full flex-1 space-y-4">
         {data.map(({ axis, score }) => (
-          <div key={axis} className="flex flex-col items-center gap-0.5">
-            <span className="text-xs font-bold tabular-nums text-[#f9fafb]">
-              {score}
-            </span>
-            <span className="text-[10px] text-[#6B7280]">{axis}</span>
-          </div>
+          <SubScoreBar key={axis} label={axis} score={score} />
         ))}
       </div>
     </div>

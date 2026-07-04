@@ -1,6 +1,17 @@
 "use client";
 
 import { motion } from "framer-motion";
+import {
+  BarChart2,
+  Target,
+  Wrench,
+  CheckCircle2,
+  AlertTriangle,
+  FolderGit2,
+  Briefcase,
+  Lightbulb,
+  type LucideIcon,
+} from "lucide-react";
 import type { AnalysisResult } from "@/types/analysis";
 import type { GitHubData } from "@/types/github";
 import SeniorityMeter from "@/components/analysis/SeniorityMeter";
@@ -16,12 +27,14 @@ interface ReportCardProps {
 /* ── Shared card wrapper with stagger entrance ───────────────────────────── */
 function Section({
   title,
-  icon,
+  icon: Icon,
+  iconClassName,
   children,
   index,
 }: {
   title: string;
-  icon: string;
+  icon: LucideIcon;
+  iconClassName?: string;
   children: React.ReactNode;
   index: number;
 }) {
@@ -29,11 +42,11 @@ function Section({
     <motion.section
       initial={{ opacity: 0, y: 24 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5, delay: index * 0.1, ease: [0.22, 1, 0.36, 1] }}
-      className="rounded-xl border border-white/10 bg-brand-surface p-6 backdrop-blur-sm"
+      transition={{ duration: 0.5, delay: index * 0.08, ease: [0.22, 1, 0.36, 1] }}
+      className="rounded-2xl border border-white/10 bg-brand-surface p-6"
     >
-      <h3 className="mb-4 flex items-center gap-2 font-heading text-base font-semibold text-brand-text">
-        <span aria-hidden="true">{icon}</span>
+      <h3 className="mb-4 flex items-center gap-2 text-sm font-semibold uppercase tracking-widest text-brand-muted">
+        <Icon className={iconClassName ?? "h-5 w-5 text-brand-muted"} aria-hidden="true" />
         {title}
       </h3>
       {children}
@@ -42,57 +55,67 @@ function Section({
 }
 
 /* ── List items ──────────────────────────────────────────────────────────── */
-function CheckList({ items }: { items: string[] }) {
+function StrengthList({ items }: { items: string[] }) {
   return (
     <ul className="space-y-2">
       {items.map((item) => (
-        <li key={item} className="flex items-start gap-2 text-sm text-brand-muted">
-          <span className="mt-0.5 shrink-0 text-[#10B981]">✓</span>
-          <span>{item}</span>
+        <li
+          key={item}
+          className="flex items-start gap-2.5 rounded-lg border border-green-500/10 bg-green-500/5 p-3"
+        >
+          <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-green-400" aria-hidden="true" />
+          <span className="text-sm text-slate-300">{item}</span>
         </li>
       ))}
     </ul>
   );
 }
 
-function WarnList({ items }: { items: string[] }) {
+function WeaknessList({ items }: { items: string[] }) {
   return (
     <ul className="space-y-2">
       {items.map((item) => (
-        <li key={item} className="flex items-start gap-2 text-sm text-brand-muted">
-          <span className="mt-0.5 shrink-0 text-[#F59E0B]">⚠</span>
-          <span>{item}</span>
+        <li
+          key={item}
+          className="flex items-start gap-2.5 rounded-lg border border-amber-500/10 bg-amber-500/5 p-3"
+        >
+          <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-amber-400" aria-hidden="true" />
+          <span className="text-sm text-slate-300">{item}</span>
         </li>
       ))}
     </ul>
   );
 }
 
-function NumberedList({ items }: { items: string[] }) {
+function SuggestionList({ items }: { items: string[] }) {
   return (
     <ol className="space-y-2">
       {items.map((item, i) => (
-        <li key={item} className="flex items-start gap-3 text-sm text-brand-muted">
-          <span className="shrink-0 font-semibold text-brand-accent tabular-nums">
-            {i + 1}.
+        <li
+          key={item}
+          className="flex items-start gap-3 rounded-lg border border-white/10 bg-white/[0.03] p-3 transition-colors hover:border-white/20"
+        >
+          <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-blue-500/10 text-xs font-bold text-blue-400">
+            {i + 1}
           </span>
-          <span>{item}</span>
+          <span className="pt-0.5 text-sm text-slate-300">{item}</span>
         </li>
       ))}
     </ol>
   );
 }
 
-function RoleBadges({ roles }: { roles: string[] }) {
+function RoleCards({ roles }: { roles: string[] }) {
   return (
-    <div className="flex flex-wrap gap-2">
+    <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
       {roles.map((role) => (
-        <span
+        <div
           key={role}
-          className="rounded-full border border-brand-primary/30 bg-brand-primary/20 px-3 py-1 text-xs font-medium text-brand-accent"
+          className="flex items-center gap-2.5 rounded-lg border border-white/10 bg-white/[0.03] px-4 py-2.5"
         >
-          {role}
-        </span>
+          <Briefcase className="h-4 w-4 shrink-0 text-blue-400" aria-hidden="true" />
+          <span className="text-sm font-medium text-brand-text">{role}</span>
+        </div>
       ))}
     </div>
   );
@@ -101,26 +124,14 @@ function RoleBadges({ roles }: { roles: string[] }) {
 /* ── Main component ──────────────────────────────────────────────────────── */
 export default function ReportCard({ analysis, githubData }: ReportCardProps) {
   return (
-    <div className="space-y-4">
-      {/* a) Summary */}
-      <motion.section
-        initial={{ opacity: 0, y: 24 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5, delay: 0, ease: [0.22, 1, 0.36, 1] }}
-        className="rounded-xl border border-brand-primary/20 bg-brand-primary/8 p-6 backdrop-blur-sm"
-      >
-        <p className="text-sm italic leading-relaxed text-brand-text/80">
-          &ldquo;{analysis.summary}&rdquo;
-        </p>
-      </motion.section>
-
-      {/* b) Score radar */}
-      <Section title="Developer Profile" icon="📊" index={1}>
+    <div className="space-y-6">
+      {/* a) Score overview */}
+      <Section title="Developer Profile" icon={BarChart2} index={0}>
         <ScoreChart analysis={analysis} githubData={githubData} />
       </Section>
 
-      {/* c) Seniority */}
-      <Section title="Seniority Level" icon="🎯" index={2}>
+      {/* b) Seniority */}
+      <Section title="Seniority Level" icon={Target} index={1}>
         <div className="flex flex-col items-center gap-6 sm:flex-row sm:items-start">
           <SeniorityMeter
             score={analysis.seniority.score}
@@ -132,37 +143,47 @@ export default function ReportCard({ analysis, githubData }: ReportCardProps) {
         </div>
       </Section>
 
-      {/* d) Tech Stack */}
-      <Section title="Tech Stack" icon="🛠" index={3}>
+      {/* c) Tech Stack */}
+      <Section title="Tech Stack" icon={Wrench} index={2}>
         <StackBadges stack={analysis.stack} />
       </Section>
 
-      {/* e) Strengths */}
-      <Section title="Strengths" icon="✅" index={4}>
-        <CheckList items={analysis.strengths} />
+      {/* d) Strengths */}
+      <Section
+        title="Strengths"
+        icon={CheckCircle2}
+        iconClassName="h-5 w-5 text-green-400"
+        index={3}
+      >
+        <StrengthList items={analysis.strengths} />
       </Section>
 
-      {/* f) Weaknesses */}
-      <Section title="Areas to Improve" icon="⚠️" index={5}>
-        <WarnList items={analysis.weaknesses} />
+      {/* e) Weaknesses */}
+      <Section
+        title="Areas to Improve"
+        icon={AlertTriangle}
+        iconClassName="h-5 w-5 text-amber-400"
+        index={4}
+      >
+        <WeaknessList items={analysis.weaknesses} />
       </Section>
 
-      {/* g) Project Highlights */}
-      <Section title="Project Highlights" icon="📦" index={6}>
+      {/* f) Project Highlights */}
+      <Section title="Project Highlights" icon={FolderGit2} index={5}>
         <ProjectList
           projects={analysis.projectHighlights}
           repos={githubData.repos}
         />
       </Section>
 
-      {/* h) Recommended Roles */}
-      <Section title="Recommended Roles" icon="💼" index={7}>
-        <RoleBadges roles={analysis.jobRoles} />
+      {/* g) Recommended Roles */}
+      <Section title="Recommended Roles" icon={Briefcase} index={6}>
+        <RoleCards roles={analysis.jobRoles} />
       </Section>
 
-      {/* i) Suggestions */}
-      <Section title="Suggestions" icon="💡" index={8}>
-        <NumberedList items={analysis.recommendations} />
+      {/* h) Suggestions */}
+      <Section title="Suggestions" icon={Lightbulb} index={7}>
+        <SuggestionList items={analysis.recommendations} />
       </Section>
     </div>
   );
