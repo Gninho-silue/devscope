@@ -1,53 +1,46 @@
 "use client";
 
 import Image from "next/image";
+import { MapPin } from "lucide-react";
 import type { GitHubUser } from "@/types/github";
 
 interface GithubCardProps {
   user: GitHubUser;
   accountAgeYears: number;
+  /** AI-generated summary — only available once /api/analyze resolves. */
+  summary?: string;
 }
 
-export default function GithubCard({ user, accountAgeYears }: GithubCardProps) {
+export default function GithubCard({ user, accountAgeYears, summary }: GithubCardProps) {
   return (
-    <div className="w-full rounded-2xl border border-white/10 bg-brand-surface p-6 shadow-[0_0_32px_rgba(36,83,211,0.08)] backdrop-blur-sm">
+    <div className="w-full rounded-2xl border border-white/10 bg-brand-surface p-6">
       <div className="flex flex-col items-center gap-4 sm:flex-row sm:items-start sm:gap-6">
         {/* Avatar */}
-        <div className="relative shrink-0">
-          <div className="absolute -inset-0.5 rounded-full bg-linear-to-br from-brand-primary to-brand-accent opacity-60 blur-sm" />
-          <Image
-            src={user.avatar_url}
-            alt={`${user.login} avatar`}
-            width={80}
-            height={80}
-            className="relative rounded-full ring-2 ring-brand-primary/40"
-            priority
-          />
-        </div>
+        <Image
+          src={user.avatar_url}
+          alt={`${user.login} avatar`}
+          width={80}
+          height={80}
+          className="shrink-0 rounded-full border border-white/10"
+          priority
+        />
 
         {/* Name / handle / bio */}
         <div className="min-w-0 flex-1 text-center sm:text-left">
-          <h2 className="font-heading text-xl font-bold text-brand-text truncate">
+          <h2 className="font-heading truncate text-xl font-bold text-brand-text">
             {user.name ?? user.login}
           </h2>
-          <p className="text-brand-accent text-sm mb-2">@{user.login}</p>
+          <p className="mb-2 text-sm text-brand-accent">@{user.login}</p>
 
           {user.bio && (
-            <p className="text-brand-muted text-sm leading-relaxed line-clamp-2">
+            <p className="line-clamp-2 text-sm leading-relaxed text-brand-muted">
               {user.bio}
             </p>
           )}
 
           {user.location && (
             <p className="mt-1.5 flex items-center justify-center gap-1 text-xs text-brand-muted sm:justify-start">
-              <svg
-                viewBox="0 0 16 16"
-                className="h-3.5 w-3.5 shrink-0"
-                fill="currentColor"
-                aria-hidden="true"
-              >
-                <path d="M8 0a5.5 5.5 0 0 0-5.5 5.5C2.5 9.625 8 16 8 16s5.5-6.375 5.5-10.5A5.5 5.5 0 0 0 8 0Zm0 7.5a2 2 0 1 1 0-4 2 2 0 0 1 0 4Z" />
-              </svg>
+              <MapPin className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
               {user.location}
             </p>
           )}
@@ -63,6 +56,13 @@ export default function GithubCard({ user, accountAgeYears }: GithubCardProps) {
           value={`${accountAgeYears} yr${accountAgeYears !== 1 ? "s" : ""}`}
         />
       </div>
+
+      {/* AI summary quote */}
+      {summary && (
+        <blockquote className="mt-5 border-l-2 border-brand-primary/40 pl-4 text-sm italic leading-relaxed text-brand-text/80">
+          &ldquo;{summary}&rdquo;
+        </blockquote>
+      )}
     </div>
   );
 }
@@ -70,7 +70,7 @@ export default function GithubCard({ user, accountAgeYears }: GithubCardProps) {
 function Stat({ label, value }: { label: string; value: string }) {
   return (
     <div className="flex flex-col items-center gap-0.5 px-4 py-3">
-      <span className="font-heading text-lg font-bold text-brand-text">{value}</span>
+      <span className="font-heading text-2xl font-bold text-brand-text">{value}</span>
       <span className="text-xs text-brand-muted">{label}</span>
     </div>
   );

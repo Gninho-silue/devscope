@@ -87,8 +87,8 @@ export default function SeniorityMeter({ score, level }: SeniorityMeterProps) {
 
       {/* Level badge */}
       <span
-        className="rounded-full px-4 py-1 text-sm font-semibold"
-        style={{ background: `${color}22`, color }}
+        className="rounded-full px-5 py-1.5 text-sm font-semibold"
+        style={{ background: `${color}1a`, color, border: `1px solid ${color}40` }}
       >
         {level}
       </span>
