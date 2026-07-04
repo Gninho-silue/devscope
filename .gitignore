@@ -40,3 +40,9 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+
+# IA help for development
+.claude                                                                                                                                                                                                                                                                                                                                                            
+CLAUDE.md
+AGENTS.md
