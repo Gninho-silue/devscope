@@ -23,15 +23,15 @@ Built by **[Gninninmaguignon Silué](https://github.com/Gninho-silue)** — Full
 
 ## Tech Stack
 
-| Layer      | Technology                           |
-| ---------- | ------------------------------------ |
-| Framework  | Next.js 14 (App Router)              |
-| Language   | TypeScript (strict)                  |
-| Styling    | Tailwind CSS + shadcn/ui             |
-| AI         | Groq API — `llama-3.3-70b-versatile` |
-| Data       | GitHub REST API v3                   |
-| Animations | Framer Motion                        |
-| Deployment | Vercel                               |
+| Layer      | Technology                       |
+| ---------- | -------------------------------- |
+| Framework  | Next.js 14 (App Router)          |
+| Language   | TypeScript (strict)              |
+| Styling    | Tailwind CSS + shadcn/ui         |
+| AI         | Groq API — `openai/gpt-oss-120b` |
+| Data       | GitHub REST API v3               |
+| Animations | Framer Motion                    |
+| Deployment | Vercel                           |
 
 ---
 

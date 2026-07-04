@@ -1,7 +1,7 @@
 import type { GitHubData, GitHubRepo, GitHubUser } from "@/types/github";
 
 const GITHUB_API = "https://api.github.com";
-const REPOS_LIMIT = 20;  // fetch 20 from GitHub, trim later
+const REPOS_LIMIT = 100; // GitHub's max per_page — fetch all, trim later
 const TOP_REPOS_LIMIT = 6;
 
 /**
@@ -66,12 +66,18 @@ export async function fetchGithubUser(username: string): Promise<GitHubUser> {
 }
 
 /**
- * Fetch the user's public repositories sorted by stars, capped at REPOS_LIMIT.
+ * Fetch the user's public repositories, capped at REPOS_LIMIT.
+ *
+ * Note: GitHub's `/users/{username}/repos` endpoint does NOT support
+ * `sort=stars` (only full_name, created, updated, pushed — default
+ * full_name). Sorting by stars happens client-side in buildGithubData
+ * once all repos are fetched.
+ *
  * Throws GitHubError on 403 (rate limit) or other non-OK responses.
  */
 export async function fetchUserRepos(username: string): Promise<GitHubRepo[]> {
   const url = new URL(`${GITHUB_API}/users/${username}/repos`);
-  url.searchParams.set("sort", "stars");
+  url.searchParams.set("sort", "updated");
   url.searchParams.set("direction", "desc");
   url.searchParams.set("per_page", String(REPOS_LIMIT));
   url.searchParams.set("type", "owner");
@@ -155,7 +161,7 @@ function trimRepo(repo: GitHubRepo): GitHubRepo {
 /**
  * Fetch all public GitHub data for a username and assemble a GitHubData object
  * ready to be sent to the Groq analysis API.
- * Repos are trimmed to top 6 by stars with minimal fields to keep token count low.
+ * Repos are trimmed to top N, fields trimmed to keep token count low.
  */
 export async function buildGithubData(username: string): Promise<GitHubData> {
   const [user, rawRepos] = await Promise.all([
@@ -163,9 +169,28 @@ export async function buildGithubData(username: string): Promise<GitHubData> {
     fetchUserRepos(username),
   ]);
 
-  // Top 6 by stars, fields trimmed to reduce LLM payload size
+  // Rank by stars first, but most personal accounts have many repos tied at
+  // 0-1 stars — without tiebreakers, a plain stars-only sort is stable and
+  // silently keeps whatever arbitrary order the GitHub API happened to
+  // return, dropping good projects at random. Break ties with forks, then
+  // topic count (a proxy for a "real" documented project), then recency.
   const repos = [...rawRepos]
-    .sort((a, b) => b.stargazers_count - a.stargazers_count)
+    .sort((a, b) => {
+      if (b.stargazers_count !== a.stargazers_count) {
+        return b.stargazers_count - a.stargazers_count;
+      }
+      if (b.forks_count !== a.forks_count) {
+        return b.forks_count - a.forks_count;
+      }
+      const aTopics = a.topics?.length ?? 0;
+      const bTopics = b.topics?.length ?? 0;
+      if (bTopics !== aTopics) {
+        return bTopics - aTopics;
+      }
+      return (
+        new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime()
+      );
+    })
     .slice(0, TOP_REPOS_LIMIT)
     .map(trimRepo);
 

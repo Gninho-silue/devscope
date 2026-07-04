@@ -4,7 +4,7 @@ import type { AnalysisResult } from "@/types/analysis";
 import type { GitHubData } from "@/types/github";
 import { buildAnalysisPrompt } from "@/lib/prompts";
 
-const MODEL = "llama-3.3-70b-versatile";
+const MODEL = process.env.GROQ_MODEL ?? "openai/gpt-oss-120b";
 const MAX_TOKENS = 1500;
 const TEMPERATURE = 0.3;
 
@@ -128,7 +128,7 @@ function validateAnalysisResult(raw: unknown): AnalysisResult {
 }
 
 /**
- * Send a GitHub profile to Groq (llama-3.3-70b-versatile) and return
+ * Send a GitHub profile to Groq (openai/gpt-oss-120b) and return
  * a validated AnalysisResult.
  *
  * - All calls are server-side only — GROQ_API_KEY never reaches the client.
