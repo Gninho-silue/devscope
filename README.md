@@ -241,7 +241,7 @@ cat .vercel/project.json
 
 **Gninninmaguignon Silué** — Full-Stack Developer | Java · React · Node.js · Cloud-Native
 
-- 🌐 [Portfolio](https://silue-portfolio.vercel.app)
+- 🌐 [Portfolio](https://silue-dev.vercel.app)
 - 💼 [LinkedIn](https://linkedin.com/in/gninema-silue)
 - 🐙 [GitHub](https://github.com/Gninho-silue)
 - 📧 gninninmaguignonsilue@gmail.com
