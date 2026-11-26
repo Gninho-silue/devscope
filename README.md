@@ -196,6 +196,8 @@ This project uses **GitHub Actions** for continuous integration and **Vercel** f
 | `preview.yml` | Every pull request              | Deploys a preview URL to Vercel and posts it as a PR comment |
 | `deploy.yml`  | CI succeeded on `main`          | Deploys the tested commit to Vercel production (never runs if CI fails) |
 
+Vercel's own Git deployments are turned off for `main` in `vercel.json` (`git.deploymentEnabled`), so production only changes through `deploy.yml`. Other branches still get Vercel previews.
+
 ### Pipeline diagram
 
 ```
