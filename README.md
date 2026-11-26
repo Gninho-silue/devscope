@@ -194,7 +194,7 @@ This project uses **GitHub Actions** for continuous integration and **Vercel** f
 | ------------- | ------------------------------- | ------------------------------------------------------------ |
 | `ci.yml`      | Every push / PR to `main`       | Runs security scan, lint, type-check, tests, and build       |
 | `preview.yml` | Every pull request              | Deploys a preview URL to Vercel and posts it as a PR comment |
-| `deploy.yml`  | Push to `main` (after PR merge) | Deploys to Vercel production (only after CI passes)          |
+| `deploy.yml`  | Push to `main` (after PR merge) | Deploys to Vercel production (runs alongside CI, does not wait for it) |
 
 ### Pipeline diagram
 
