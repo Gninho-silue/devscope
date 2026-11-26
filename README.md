@@ -194,7 +194,7 @@ This project uses **GitHub Actions** for continuous integration and **Vercel** f
 | ------------- | ------------------------------- | ------------------------------------------------------------ |
 | `ci.yml`      | Every push / PR to `main`       | Runs security scan, lint, type-check, tests, and build       |
 | `preview.yml` | Every pull request              | Deploys a preview URL to Vercel and posts it as a PR comment |
-| `deploy.yml`  | Push to `main` (after PR merge) | Deploys to Vercel production (runs alongside CI, does not wait for it) |
+| `deploy.yml`  | CI succeeded on `main`          | Deploys the tested commit to Vercel production (never runs if CI fails) |
 
 ### Pipeline diagram
 
@@ -206,8 +206,7 @@ PR opened / push
   └── type-check
 
 PR merged to main
-  └── deploy.yml → Vercel production deploy
-                   (# Security and tests validated by CI pipeline)
+  └── CI on main ──(success only)──→ deploy.yml → Vercel production deploy
 ```
 
 ### Required GitHub Secrets

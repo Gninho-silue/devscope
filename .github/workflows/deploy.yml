@@ -1,21 +1,32 @@
 name: Deploy to Production
 
 on:
-  push:
+  # Starts when the CI workflow finishes on main. The job below deploys only
+  # if CI succeeded on a push, so a failing build, test or audit blocks it.
+  workflow_run:
+    workflows: ["CI"]
+    types: [completed]
     branches: [main]
+  # Manual redeploy of main from the Actions tab.
+  workflow_dispatch:
 
 jobs:
   deploy-production:
     name: Deploy Production
     runs-on: ubuntu-latest
     environment: production
-    # Only deploy if the CI workflow (tests + security) has passed
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      (github.event.workflow_run.conclusion == 'success' &&
+       github.event.workflow_run.event == 'push')
     env:
       VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
       VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
     steps:
       - uses: actions/checkout@v4
+        with:
+          # Deploy exactly the commit that CI tested.
+          ref: ${{ github.event.workflow_run.head_sha || github.sha }}
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -33,9 +44,9 @@ jobs:
           GITHUB_PAT: ${{ secrets.GITHUB_PAT }}
           NEXT_PUBLIC_APP_URL: https://devscope.vercel.app
 
-      # Security and tests validated by CI pipeline
+      # The Vercel CLI is not a project dependency; pin it here.
       - name: Deploy to Vercel (production)
-        run: npx vercel --prod --token=${{ secrets.VERCEL_TOKEN }} --yes
+        run: npx --yes vercel@67.0.0 --prod --token=${{ secrets.VERCEL_TOKEN }} --yes
         env:
           VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
           VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
