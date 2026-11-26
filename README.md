@@ -1,8 +1,8 @@
 # DevScope 🔍
 
-> AI-powered GitHub profile analyzer — get an instant technical report on any developer.DevScope — AI-powered GitHub Profile Analyzer  
-> Next.js · TypeScript · Groq AI · GitHub Actions · Vercel  
-> [Checkout here](https://devscope-lake.vercel.app/)
+> AI-powered GitHub profile analyzer: get an instant technical report on any developer.  
+> Next.js 16 · TypeScript · Groq (`openai/gpt-oss-120b`) · Vitest · GitHub Actions · Vercel  
+> [Try it here](https://devscope-lake.vercel.app/)
 
 ![DevScope Hero](public/og-image.png)
 
@@ -25,13 +25,15 @@ Built by **[Gninninmaguignon Silué](https://github.com/Gninho-silue)** — Full
 
 | Layer      | Technology                       |
 | ---------- | -------------------------------- |
-| Framework  | Next.js 14 (App Router)          |
-| Language   | TypeScript (strict)              |
-| Styling    | Tailwind CSS + shadcn/ui         |
-| AI         | Groq API — `openai/gpt-oss-120b` |
-| Data       | GitHub REST API v3               |
-| Animations | Framer Motion                    |
-| Deployment | Vercel                           |
+| Framework  | Next.js 16 (App Router), React 19 |
+| Language   | TypeScript (strict)               |
+| Styling    | Tailwind CSS 4                    |
+| Icons      | Lucide                            |
+| AI         | Groq API, `openai/gpt-oss-120b` (override with `GROQ_MODEL`) |
+| Data       | GitHub REST API v3                |
+| Animations | Framer Motion                     |
+| Tests      | Vitest + Testing Library          |
+| Deployment | Vercel                            |
 
 ---
 
@@ -39,7 +41,7 @@ Built by **[Gninninmaguignon Silué](https://github.com/Gninho-silue)** — Full
 
 ### Prerequisites
 
-- Node.js 18+
+- Node.js 20.9+
 - A [Groq API key](https://console.groq.com) (free)
 - A [GitHub Personal Access Token](https://github.com/settings/tokens) (optional, recommended)
 
@@ -80,6 +82,8 @@ npm run dev
 ```
 
 ### Run Tests
+
+Unit and component tests use **Vitest** with **Testing Library** (jsdom).
 
 ```bash
 # Run all tests once
@@ -190,7 +194,7 @@ This project uses **GitHub Actions** for continuous integration and **Vercel** f
 | ------------- | ------------------------------- | ------------------------------------------------------------ |
 | `ci.yml`      | Every push / PR to `main`       | Runs security scan, lint, type-check, tests, and build       |
 | `preview.yml` | Every pull request              | Deploys a preview URL to Vercel and posts it as a PR comment |
-| `deploy.yml`  | Push to `main` (after PR merge) | Deploys to Vercel production (only after CI passes)          |
+| `deploy.yml`  | Push to `main` (after PR merge) | Deploys to Vercel production (runs alongside CI, does not wait for it) |
 
 ### Pipeline diagram
 
