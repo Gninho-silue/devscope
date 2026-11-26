@@ -44,9 +44,10 @@ jobs:
           GITHUB_PAT: ${{ secrets.GITHUB_PAT }}
           NEXT_PUBLIC_APP_URL: https://devscope.vercel.app
 
-      # The Vercel CLI is not a project dependency; pin it here.
+      # The Vercel CLI is not a project dependency; pinned to the version the
+      # deploy token is known to work with (67.0.0 rejects it).
       - name: Deploy to Vercel (production)
-        run: npx --yes vercel@67.0.0 --prod --token=${{ secrets.VERCEL_TOKEN }} --yes
+        run: npx --yes vercel@50.41.0 --prod --token=${{ secrets.VERCEL_TOKEN }} --yes
         env:
           VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
           VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
